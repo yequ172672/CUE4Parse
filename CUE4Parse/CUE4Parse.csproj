@@ -46,7 +46,7 @@
 
   <Target Name="Build-Natives" BeforeTargets="BeforeBuild" AfterTargets="AfterBuild">
     <MakeDir Directories="$(CMakeBuildDir)" Condition="!Exists('$(CMakeBuildDir)')" />
-    <Exec Command="cmake .." ConsoleToMSBuild="true" WorkingDirectory="$(CMakeBuildDir)" IgnoreExitCode="true">
+    <Exec Command="cmake .. -G &quot;Visual Studio 17 2022&quot; -A x64" ConsoleToMSBuild="true" WorkingDirectory="$(CMakeBuildDir)" IgnoreExitCode="true">
       <Output TaskParameter="ConsoleOutput" PropertyName="OutputOfExec" />
       <Output TaskParameter="ExitCode" PropertyName="CMakeExitCode" />
     </Exec>
