@@ -11,6 +11,9 @@ namespace CUE4Parse.UE4.Assets.Exports.SkeletalMesh;
 public class FSkeletalMaterial
 {
     public ResolvedObject? Material; // UMaterialInterface
+    public int MaterialPackageIndex;
+    public long MaterialPackageIndexAbsoluteOffset;
+    public long MaterialPackageIndexArchiveOffset;
     public FName MaterialSlotName;
     public FName? ImportedMaterialSlotName;
     public FMeshUVChannelInfo? UVChannelData;
@@ -18,7 +21,11 @@ public class FSkeletalMaterial
 
     public FSkeletalMaterial(FAssetArchive Ar)
     {
-        Material = new FPackageIndex(Ar).ResolvedObject;
+        MaterialPackageIndexAbsoluteOffset = Ar.AbsolutePosition;
+        MaterialPackageIndexArchiveOffset = Ar.Position;
+        var materialIndex = new FPackageIndex(Ar);
+        MaterialPackageIndex = materialIndex.Index;
+        Material = materialIndex.ResolvedObject;
         if (FEditorObjectVersion.Get(Ar) >= FEditorObjectVersion.Type.RefactorMeshEditorMaterials)
         {
             MaterialSlotName = Ar.ReadFName();

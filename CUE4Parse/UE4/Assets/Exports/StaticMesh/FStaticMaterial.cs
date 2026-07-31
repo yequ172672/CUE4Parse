@@ -11,6 +11,9 @@ namespace CUE4Parse.UE4.Assets.Exports.StaticMesh
     public class FStaticMaterial
     {
         public ResolvedObject? MaterialInterface; // UMaterialInterface
+        public int MaterialPackageIndex;
+        public long MaterialPackageIndexAbsoluteOffset;
+        public long MaterialPackageIndexArchiveOffset;
         public FName MaterialSlotName;
         public FName ImportedMaterialSlotName;
         public FMeshUVChannelInfo? UVChannelData;
@@ -18,7 +21,11 @@ namespace CUE4Parse.UE4.Assets.Exports.StaticMesh
 
         public FStaticMaterial(FAssetArchive Ar)
         {
-            MaterialInterface = new FPackageIndex(Ar).ResolvedObject;
+            MaterialPackageIndexAbsoluteOffset = Ar.AbsolutePosition;
+            MaterialPackageIndexArchiveOffset = Ar.Position;
+            var materialIndex = new FPackageIndex(Ar);
+            MaterialPackageIndex = materialIndex.Index;
+            MaterialInterface = materialIndex.ResolvedObject;
             MaterialSlotName = Ar.ReadFName();
 
             if (FRenderingObjectVersion.Get(Ar) >= FRenderingObjectVersion.Type.TextureStreamingMeshUVChannelData)
