@@ -2,18 +2,18 @@ using CUE4Parse.UE4.Assets.Readers;
 using CUE4Parse.UE4.Readers;
 using CUE4Parse.UE4.Versions;
 using Newtonsoft.Json;
-using Serilog;
 
 namespace CUE4Parse.UE4.Assets.Exports.Rig;
 
 public class UDNAAsset : UObject
 {
+    
     public DNAVersion Version;
     public DNAVersion LayerVersion;
     public Dictionary<string, IRawBase> Sections;
     public Dictionary<string, IRawBase> Layers;
     public Lazy<byte[]>? DNAData;
-    public string DnaFileName;
+    public string? DnaFileName;
 
     private readonly byte[] _signature = "DNA"u8.ToArray();
     private readonly byte[] _eof = "AND"u8.ToArray();
@@ -22,7 +22,7 @@ public class UDNAAsset : UObject
     public override void Deserialize(FAssetArchive Ar, long validPos)
     {
         base.Deserialize(Ar, validPos);
-        DnaFileName = GetOrDefault(nameof(DnaFileName), string.Empty);
+        DnaFileName = GetOrDefault<string>(nameof(DnaFileName));
 
         if (FDNAAssetCustomVersion.Get(Ar) >= FDNAAssetCustomVersion.Type.BeforeCustomVersionWasAdded)
         {
@@ -56,7 +56,7 @@ public class UDNAAsset : UObject
                 if (!eof.SequenceEqual(_eof))
                     throw new InvalidDataException("Invalid end of file signature");
 
-                if (Ar.Game == EGame.GAME_ArenaBreakoutInfinite)
+                if (Ar.Game is GAME_ArenaBreakoutInfinite or GAME_ArenaBreakoutMobile)
                     return;
             }
             else if (Version.FileVersion >= FileVersion.v26)

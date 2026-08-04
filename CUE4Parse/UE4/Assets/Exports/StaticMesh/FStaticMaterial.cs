@@ -10,14 +10,14 @@ namespace CUE4Parse.UE4.Assets.Exports.StaticMesh
     [StructFallback]
     public class FStaticMaterial
     {
-        public ResolvedObject? MaterialInterface; // UMaterialInterface
+        public FPackageIndex? MaterialInterface; // UMaterialInterface
         public int MaterialPackageIndex;
         public long MaterialPackageIndexAbsoluteOffset;
         public long MaterialPackageIndexArchiveOffset;
         public FName MaterialSlotName;
-        public FName ImportedMaterialSlotName;
+        public FName? ImportedMaterialSlotName;
         public FMeshUVChannelInfo? UVChannelData;
-        public FPackageIndex OverlayMaterialInterface;
+        public FPackageIndex? OverlayMaterialInterface;
 
         public FStaticMaterial(FAssetArchive Ar)
         {
@@ -25,7 +25,7 @@ namespace CUE4Parse.UE4.Assets.Exports.StaticMesh
             MaterialPackageIndexArchiveOffset = Ar.Position;
             var materialIndex = new FPackageIndex(Ar);
             MaterialPackageIndex = materialIndex.Index;
-            MaterialInterface = materialIndex.ResolvedObject;
+            MaterialInterface = materialIndex;
             MaterialSlotName = Ar.ReadFName();
 
             if (FRenderingObjectVersion.Get(Ar) >= FRenderingObjectVersion.Type.TextureStreamingMeshUVChannelData)
@@ -36,12 +36,18 @@ namespace CUE4Parse.UE4.Assets.Exports.StaticMesh
                 OverlayMaterialInterface = new FPackageIndex(Ar);
             }
 
-            if (Ar.Game is EGame.GAME_FragPunk or EGame.GAME_WorldofJadeDynasty) Ar.Position += 4;
+            if (Ar.Game is GAME_FragPunk or GAME_WorldofJadeDynasty) Ar.Position += 4;
+        }
+
+        public FStaticMaterial(FPackageIndex? material)
+        {
+            MaterialInterface = material;
+            MaterialSlotName = material?.Name ?? "None";
         }
 
         public FStaticMaterial(FStructFallback fallback)
         {
-            MaterialInterface = fallback.GetOrDefault(nameof(MaterialInterface), new FPackageIndex().ResolvedObject);
+            MaterialInterface = fallback.GetOrDefault(nameof(MaterialInterface), new FPackageIndex());
             MaterialSlotName = fallback.GetOrDefault<FName>(nameof(MaterialSlotName), "None");
             ImportedMaterialSlotName = fallback.GetOrDefault<FName>(nameof(ImportedMaterialSlotName), "None");
             UVChannelData = fallback.GetOrDefault<FMeshUVChannelInfo>(nameof(UVChannelData), null);
