@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using CUE4Parse_Conversion.Options;
+﻿using CUE4Parse_Conversion.Options;
 using CUE4Parse_Conversion.Writers.ActorX;
 using CUE4Parse_Conversion.Writers.ActorX.Structs.Animations;
 using CUE4Parse.UE4.Writers;

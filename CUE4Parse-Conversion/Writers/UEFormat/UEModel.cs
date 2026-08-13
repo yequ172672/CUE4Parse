@@ -18,12 +18,13 @@ public sealed class UEModel : UEFormatExport
 {
     protected override string Identifier => "UEMODEL";
 
-    public UEModel(string name, StaticMeshDto mesh, ExportOptions options) : base(name, options)
+    public UEModel(string name, StaticMeshDto mesh, ExportOptions options, Func<MeshLodDto<MeshVertex>, bool>? predicate = null) : base(name, options)
     {
         using (var lodChunk = new FDataChunk("LODS"))
         {
             foreach (var lod in mesh.LODs)
             {
+                if (predicate is not null && !predicate(lod)) continue;
                 using var subLodChunk = new FStaticDataChunk($"LOD{lod.SourceLodIndex}");
                 SerializeCommonMeshData(subLodChunk, lod);
                 subLodChunk.Serialize(lodChunk);
@@ -51,12 +52,12 @@ public sealed class UEModel : UEFormatExport
     {
         using (var skeletonChunk = new FDataChunk("SKELETON", 1))
         {
-            SerializeSkeletonData(skeletonChunk, skeleton);
+            SerializeSkeletonData(skeletonChunk, skeleton, options.SocketFormat != ESocketFormat.None);
             skeletonChunk.Serialize(Ar);
         }
     }
 
-    public UEModel(string name, SkeletalMeshDto mesh, ExportOptions options) : base(name, options)
+    public UEModel(string name, SkeletalMeshDto mesh, ExportOptions options, Func<MeshLodDto<SkinnedMeshVertex>, bool>? predicate = null) : base(name, options)
     {
         if (mesh.LODs.Count > 0)
         {
@@ -64,6 +65,7 @@ public sealed class UEModel : UEFormatExport
 
             foreach (var lod in mesh.LODs)
             {
+                if (predicate is not null && !predicate(lod)) continue;
                 using var subLodChunk = new FStaticDataChunk($"LOD{lod.SourceLodIndex}");
                 SerializeCommonMeshData(subLodChunk, lod);
                 SerializeSkeletalMeshData(subLodChunk, lod, options.ExportMorphTargets ? mesh.MorphTargets : null);
@@ -77,7 +79,7 @@ public sealed class UEModel : UEFormatExport
 
         using (var skeletonChunk = new FDataChunk("SKELETON", 1))
         {
-            SerializeSkeletonData(skeletonChunk, mesh);
+            SerializeSkeletonData(skeletonChunk, mesh, options.SocketFormat != ESocketFormat.None);
             skeletonChunk.Serialize(Ar);
         }
 
@@ -214,7 +216,7 @@ public sealed class UEModel : UEFormatExport
         }
     }
 
-    private void SerializeSkeletonData(FArchiveWriter archive, SkeletonDto skeleton)
+    private void SerializeSkeletonData(FArchiveWriter archive, SkeletonDto skeleton, bool exportSockets)
     {
         using (var metaDataChunk = new FDataChunk("METADATA", 1))
         {
@@ -240,7 +242,7 @@ public sealed class UEModel : UEFormatExport
             boneChunk.Serialize(archive);
         }
 
-        if (skeleton.Sockets is { Length: > 0 })
+        if (exportSockets && skeleton.Sockets is { Length: > 0 })
         {
             using var socketChunk = new FDataChunk("SOCKETS", skeleton.Sockets.Length);
             foreach (var socketObject in skeleton.Sockets)
