@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using CUE4Parse.GameTypes.Nascar.Assets.Exports;
 using CUE4Parse.UE4.Assets.Exports.Component;
 using CUE4Parse.UE4.Assets.Exports.Component.Landscape;
 using CUE4Parse.UE4.Assets.Exports.Component.Lights;
@@ -51,7 +50,7 @@ internal sealed class WorldParseContext
                         _ => new StaticMeshComponentDto(mesh, sm, owner)
                     },
                     USkeletalMeshComponent sk when sk.TryGetValue<FPackageIndex>(out var mesh, "SkeletalMesh", "SkinnedAsset") => new SkeletalMeshComponentDto(mesh, sk, owner),
-                    UGeometryCollectionComponent gc => new GeometryCollectionComponentDto(gc, owner),
+                    UGeometryCollectionComponent { RestCollection: not null } gc => new GeometryCollectionComponentDto(gc.RestCollection, gc, owner),
                     ULandscapeComponent landscape => new LandscapeMeshComponentDto(landscape, owner),
                     ULandscapeSplinesComponent splines => new LandscapeSplinesComponentDto(splines, owner),
                     // UBillboardComponent billboard => new BillboardComponent(billboard),
@@ -72,6 +71,7 @@ internal sealed class WorldParseContext
                         UDirectionalLightComponent directionalLight => new DirectionalLightComponentDto(directionalLight, owner),
                         _ => new SceneComponentDto(light, owner)
                     },
+                    UIRMeshComponent irmc => new IRMeshCComponentDto(irmc, owner),
                     // UAudioComponent audio => new AudioComponent(audio),
                     // UTextRenderComponent text => new TextRenderComponent(text),
                     // UCameraComponent camera => new CameraComponent(camera),
